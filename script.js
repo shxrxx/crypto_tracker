@@ -75,9 +75,10 @@ async function updateComparison() {
 
 // Remove cryptocurrency from comparison
 function removeFromComparison(id) {
-  selected = selected.filter(cryptoId => cryptoId !== id);
-  updateComparison();
-}
+    selected = selected.filter(cryptoId => cryptoId !== id);
+    updateComparison(); // Refresh the comparison section after removing the item
+  }
+  
 
 // Sort cryptocurrencies by user preference
 sortBy.addEventListener('change', () => {
