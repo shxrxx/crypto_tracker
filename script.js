@@ -8,6 +8,9 @@ const sortBy = document.getElementById('sort-by');
 // Initialize selected cryptocurrencies as an empty array
 let selected = [];
 
+// Initialize sorting
+sortBy.addEventListener('change', fetchCryptos);
+
 // Initialize the app
 async function initializeApp() {
     const response = await fetch(API_URL + API_PARAMS);
