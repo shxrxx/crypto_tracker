@@ -5,20 +5,13 @@ const cryptoList = document.getElementById('cryptocurrencies');
 const selectedCryptos = document.getElementById('selected-cryptos');
 const sortBy = document.getElementById('sort-by');
 
-// Load selected cryptocurrencies from localStorage or initialize an empty array
-let selected = JSON.parse(localStorage.getItem('selectedCryptos')) || [];
+// Initialize selected cryptocurrencies as an empty array
+let selected = [];
 
 // Initialize the app
 async function initializeApp() {
   const response = await fetch(API_URL + API_PARAMS);
   const data = await response.json();
-
-  // Validate and synchronize `selected` with the fetched data
-  const validSelected = selected.filter(id => data.some(crypto => crypto.id === id));
-  if (validSelected.length !== selected.length) {
-    selected = validSelected; // Remove invalid IDs
-    localStorage.setItem('selectedCryptos', JSON.stringify(selected));
-  }
 
   // Render the cryptocurrency list and update the comparison section
   renderCryptoList(data);
@@ -61,14 +54,13 @@ function renderCryptoList(cryptos) {
 
 // Add a cryptocurrency to the comparison section
 function addToComparison(id) {
-  if (selected.length >= 3) {
-    alert('You can only compare up to 3 cryptocurrencies.');
+  if (selected.length >= 2) { // Limit set to 2 comparisons
+    alert('You can only compare up to 2 cryptocurrencies.');
     return;
   }
 
   if (!selected.includes(id)) {
     selected.push(id);
-    localStorage.setItem('selectedCryptos', JSON.stringify(selected));
     updateComparison();
   } else {
     alert('This cryptocurrency is already in the comparison list.');
@@ -77,7 +69,11 @@ function addToComparison(id) {
 
 // Update the comparison section with selected cryptocurrencies
 async function updateComparison() {
-  localStorage.setItem('selectedCryptos', JSON.stringify(selected));
+  // Check if the selected list is empty and render a message if it is
+  if (selected.length === 0) {
+    selectedCryptos.innerHTML = '<p>No cryptocurrencies selected for comparison.</p>';
+    return; // Exit early if no cryptocurrencies are selected
+  }
 
   const response = await fetch(API_URL + API_PARAMS);
   const data = await response.json();
@@ -85,7 +81,7 @@ async function updateComparison() {
   // Filter selected cryptocurrencies from the fetched data
   const selectedData = data.filter(crypto => selected.includes(crypto.id));
 
-  selectedCryptos.innerHTML = '';
+  selectedCryptos.innerHTML = ''; // Clear the previous list of selected cryptos
   selectedData.forEach(crypto => {
     const card = document.createElement('div');
     card.className = 'crypto-card';
@@ -109,8 +105,10 @@ async function updateComparison() {
 
 // Remove a cryptocurrency from the comparison section
 function removeFromComparison(id) {
+  // Remove the cryptocurrency by ID from the selected array
   selected = selected.filter(cryptoId => cryptoId !== id);
-  localStorage.setItem('selectedCryptos', JSON.stringify(selected));
+
+  // Update the comparison section after removal
   updateComparison();
 }
 
