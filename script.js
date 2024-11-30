@@ -45,24 +45,33 @@ function addToComparison(id) {
 
 // Update comparison section
 async function updateComparison() {
-  localStorage.setItem('selectedCryptos', JSON.stringify(selected));
-  const response = await fetch(API_URL + API_PARAMS);
-  const data = await response.json();
-  const selectedData = data.filter(crypto => selected.includes(crypto.id));
+    localStorage.setItem('selectedCryptos', JSON.stringify(selected));
+    const response = await fetch(API_URL + API_PARAMS);
+    const data = await response.json();
+    const selectedData = data.filter(crypto => selected.includes(crypto.id));
   
-  selectedCryptos.innerHTML = '';
-  selectedData.forEach(crypto => {
-    const card = document.createElement('div');
-    card.className = 'crypto-card';
-    card.innerHTML = `
-      <h3>${crypto.name} (${crypto.symbol.toUpperCase()})</h3>
-      <p>Price: $${crypto.current_price.toFixed(2)}</p>
-      <p>Market Cap: $${crypto.market_cap.toLocaleString()}</p>
-      <button onclick="removeFromComparison('${crypto.id}')">Remove</button>
-    `;
-    selectedCryptos.appendChild(card);
-  });
-}
+    selectedCryptos.innerHTML = '';
+    selectedData.forEach(crypto => {
+      const card = document.createElement('div');
+      card.className = 'crypto-card';
+      card.innerHTML = `
+        <h3>${crypto.name} (${crypto.symbol.toUpperCase()})</h3>
+        <p>Price: $${crypto.current_price.toFixed(2)}</p>
+        <p>Market Cap: $${crypto.market_cap.toLocaleString()}</p>
+        <button class="remove-btn" data-id="${crypto.id}">Remove</button>
+      `;
+      selectedCryptos.appendChild(card);
+    });
+  
+    // Add event listeners to all remove buttons
+    document.querySelectorAll('.remove-btn').forEach(button => {
+      button.addEventListener('click', (event) => {
+        const idToRemove = event.target.dataset.id;
+        removeFromComparison(idToRemove);
+      });
+    });
+  }
+  
 
 // Remove cryptocurrency from comparison
 function removeFromComparison(id) {
