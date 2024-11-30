@@ -52,7 +52,6 @@ function renderCryptoList(cryptos) {
   });
 }
 
-
 // Add a cryptocurrency to the comparison section
 function addToComparison(id) {
   if (selected.length >= 2) { // Limit set to 2 comparisons
@@ -104,6 +103,14 @@ async function updateComparison() {
   });
 }
 
+// Remove a cryptocurrency from the comparison section
+function removeFromComparison(id) {
+  // Remove the cryptocurrency by ID from the selected array
+  selected = selected.filter(cryptoId => cryptoId !== id);
+
+  // Update the comparison section after removal
+  updateComparison();
+}
 
 // Save the comparison list to local storage
 function saveToLocalStorage() {
@@ -133,4 +140,4 @@ sortBy.addEventListener('change', () => {
 
 // Initialize the app and set up auto-refresh
 initializeApp();
-setInterval(fetchCryptos, 600); // Update data every minute
+setInterval(fetchCryptos, 60000); // Update data every minute
