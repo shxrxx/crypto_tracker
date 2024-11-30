@@ -10,13 +10,18 @@ let selected = [];
 
 // Initialize the app
 async function initializeApp() {
-  const response = await fetch(API_URL + API_PARAMS);
-  const data = await response.json();
+    const response = await fetch(API_URL + API_PARAMS);
+    const data = await response.json();
 
-  // Render the cryptocurrency list and update the comparison section
-  renderCryptoList(data);
-  updateComparison();
+    // Load persisted data from local storage
+    const savedCryptos = JSON.parse(localStorage.getItem('selectedCryptos')) || [];
+    selected = savedCryptos;
+
+    // Render the cryptocurrency list and comparison section
+    renderCryptoList(data);
+    updateComparison();
 }
+
 
 // Fetch cryptocurrency data with sorting logic
 async function fetchCryptos() {
@@ -59,6 +64,11 @@ function addToComparison(id) {
     return;
   }
 
+  if (!id) {
+    alert('Unable to add this cryptocurrency to the comparison list.');
+    return;
+}
+
   if (!selected.includes(id)) {
     selected.push(id);
     updateComparison();
@@ -69,39 +79,46 @@ function addToComparison(id) {
 
 // Update the comparison section with selected cryptocurrencies
 async function updateComparison() {
-  // Check if the selected list is empty and render a message if it is
-  if (selected.length === 0) {
-    selectedCryptos.innerHTML = '<p>No cryptocurrencies selected for comparison.</p>';
-    return; // Exit early if no cryptocurrencies are selected
-  }
+    console.log('Updating comparison with selected:', selected);
 
-  const response = await fetch(API_URL + API_PARAMS);
-  const data = await response.json();
+    // If no cryptocurrencies are selected, show a message
+    if (selected.length === 0) {
+      selectedCryptos.innerHTML = '<p>No cryptocurrencies selected for comparison.</p>';
+      return;
+    }
+  
+    // Fetch data to filter selected cryptocurrencies
+    const response = await fetch(API_URL + API_PARAMS);
+    const data = await response.json();
+    const selectedData = data.filter(crypto => selected.includes(crypto.id));
+    console.log('Selected data:', selectedData);
 
-  // Filter selected cryptocurrencies from the fetched data
-  const selectedData = data.filter(crypto => selected.includes(crypto.id));
-
-  selectedCryptos.innerHTML = ''; // Clear the previous list of selected cryptos
-  selectedData.forEach(crypto => {
-    const card = document.createElement('div');
-    card.className = 'crypto-card';
-    card.innerHTML = `
-      <h3>${crypto.name} (${crypto.symbol.toUpperCase()})</h3>
-      <p>Price: $${crypto.current_price.toFixed(2)}</p>
-      <p>Market Cap: $${crypto.market_cap.toLocaleString()}</p>
-      <button class="remove-btn" data-id="${crypto.id}">Remove</button>
-    `;
-    selectedCryptos.appendChild(card);
-  });
-
-  // Attach event listeners to dynamically created remove buttons
-  document.querySelectorAll('.remove-btn').forEach(button => {
-    button.addEventListener('click', (event) => {
-      const idToRemove = event.target.dataset.id;
-      removeFromComparison(idToRemove);
+    selectedCryptos.innerHTML = ''; // Clear previous comparison UI
+  
+    selectedData.forEach(crypto => {
+      const card = document.createElement('div');
+      card.className = 'crypto-card';
+      card.innerHTML = `
+        <h3>${crypto.name} (${crypto.symbol.toUpperCase()})</h3>
+        <p>Price: $${crypto.current_price.toFixed(2)}</p>
+        <p>Market Cap: $${crypto.market_cap.toLocaleString()}</p>
+        <button class="remove-btn" data-id="${crypto.id}">Remove</button>
+      `;
+      selectedCryptos.appendChild(card);
     });
-  });
-}
+  
+    // Attach event listeners to dynamically created remove buttons
+    document.querySelectorAll('.remove-btn').forEach(button => {
+      button.addEventListener('click', (event) => {
+        const idToRemove = event.target.dataset.id;
+        removeFromComparison(idToRemove);
+      });
+    });
+  
+    // Save the updated list to local storage
+    localStorage.setItem('selectedCryptos', JSON.stringify(selected));
+  }
+  
 
 // Remove a cryptocurrency from the comparison section
 function removeFromComparison(id) {
@@ -132,6 +149,26 @@ function removeFromComparison(id) {
     saveToLocalStorage();
 }
 
+
+// Clear all cryptocurrencies from the comparison list and remove data from local storage
+function clearAllComparison() {
+    // Reset the selected array
+    selected = [];
+
+    // Clear the comparison section UI
+    selectedCryptos.innerHTML = '<p>No cryptocurrencies selected for comparison.</p>';
+
+    // Clear the data from local storage
+    localStorage.removeItem('selectedCryptos'); // Remove the key completely
+
+    console.log('Local storage cleared:', localStorage.getItem('selectedCryptos')); // Should log null
+
+}
+
+  
+  // Attach the Clear All functionality to the button
+  document.getElementById('clear-all-btn').addEventListener('click', clearAllComparison);
+  
 
 // Handle sorting logic
 sortBy.addEventListener('change', () => {
