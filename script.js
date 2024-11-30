@@ -9,10 +9,23 @@ let selected = JSON.parse(localStorage.getItem('selectedCryptos')) || [];
 
 // Fetch cryptocurrency data
 async function fetchCryptos() {
-  const response = await fetch(API_URL + API_PARAMS);
-  const data = await response.json();
-  renderCryptoList(data);
-}
+    const response = await fetch(API_URL + API_PARAMS);
+    let data = await response.json();
+  
+    // Sort the data based on the selected option
+    const sortByValue = sortBy.value; // Get selected sorting preference
+    if (sortByValue === 'market_cap_desc') {
+      data.sort((a, b) => b.market_cap - a.market_cap); // High to Low Market Cap
+    } else if (sortByValue === 'price_asc') {
+      data.sort((a, b) => a.current_price - b.current_price); // Low to High Price
+    } else if (sortByValue === 'price_desc') {
+      data.sort((a, b) => b.current_price - a.current_price); // High to Low Price
+    }
+  
+    // Render the sorted data
+    renderCryptoList(data);
+  }
+  
 
 // Render cryptocurrency list
 function renderCryptoList(cryptos) {
