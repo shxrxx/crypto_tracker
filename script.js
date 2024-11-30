@@ -32,17 +32,19 @@ function renderCryptoList(cryptos) {
 
 // Add cryptocurrency to comparison
 function addToComparison(id) {
-  if (selected.length >= 5) {
-    alert('You can only compare up to 5 cryptocurrencies.');
-    return;
+    if (selected.length >= 3) { // Limit set to 3 comparisons
+      alert('You can only compare up to 3 cryptocurrencies.');
+      return;
+    }
+  
+    if (!selected.includes(id)) {
+      selected.push(id);
+      updateComparison(); // Refresh the comparison section
+    } else {
+      alert('This cryptocurrency is already in the comparison list.');
+    }
   }
-
-  if (!selected.includes(id)) {
-    selected.push(id);
-    updateComparison();
-  }
-}
-
+  
 // Update comparison section
 async function updateComparison() {
     localStorage.setItem('selectedCryptos', JSON.stringify(selected));
